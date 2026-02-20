@@ -335,24 +335,32 @@ function kanaAllDone(state) {
       && kanaCountDone('kata', state) === state.kana.sets.kata.length
 }
 
-function advanceKanaChapter() {
-  // 둘 다 10개 전부 외움완료일 때만
+function advanceKanaChapter(kind) {
+  // kind: 'hira' | 'kata'
   const s = ensureState(load())
-  if (!kanaAllDone(s)) return false
 
-  // 다음 10개로 진행: 인덱스를 +10씩
-  s.progress.hiraIndex = (s.progress.hiraIndex + 10) % HIRAGANA.length
-  s.progress.kataIndex = (s.progress.kataIndex + 10) % KATAKANA.length
+  if (kind === 'hira') {
+    // 히라 10개 전부 외움완료일 때만
+    if (kanaCountDone('hira', s) !== s.kana.sets.hira.length) return false
 
-  s.kana.sets.hira = takeN(HIRAGANA, 'hiraIndex', s, 10, false)
-  s.kana.sets.kata = takeN(KATAKANA, 'kataIndex', s, 10, false)
+    // 다음 10개로
+    s.progress.hiraIndex = (s.progress.hiraIndex + 10) % HIRAGANA.length
+    s.kana.sets.hira = takeN(HIRAGANA, 'hiraIndex', s, 10, false)
+    s.kana.mem.hira = {}
+  } else {
+    // 카타 10개 전부 외움완료일 때만
+    if (kanaCountDone('kata', s) !== s.kana.sets.kata.length) return false
 
-  s.kana.mem.hira = {}
-  s.kana.mem.kata = {}
+    // 다음 10개로
+    s.progress.kataIndex = (s.progress.kataIndex + 10) % KATAKANA.length
+    s.kana.sets.kata = takeN(KATAKANA, 'kataIndex', s, 10, false)
+    s.kana.mem.kata = {}
+  }
 
   save(s)
   return true
 }
+
 
 /** ========= 라우팅 ========= */
 const app = document.querySelector('#app')
@@ -388,7 +396,7 @@ function base(title, body) {
 function renderNickname() {
   app.innerHTML = `
     <div class="wrap">
-      <h1>찐초보 일본어 스타터</h1>
+      <h1>찐초보 일본어 스타터 by SB</h1>
       <p class="muted">닉네임만 정하면 바로 시작해요. (개인정보 없음)</p>
       <input class="input" id="nick" placeholder="닉네임" /></p>
       <button class="btn primary" id="startBtn">시작하기</button>
@@ -429,7 +437,7 @@ function renderHome() {
           카타 외움완료: <b>${kataDone}</b> / 10
         </div>
         <div class="muted small" style="margin-top:8px;">
-          ※ 히라+카타 둘 다 10개 외움완료가 되어야 다음 10개로 넘어갈 수 있어요.
+          ※ 10개 외움완료가 되면 다음 10개로 넘어갈 수 있어요.
         </div>
       </div>
 
@@ -485,7 +493,8 @@ function renderKanaStudy(kind) {
   const mem = isHira ? state.kana.mem.hira : state.kana.mem.kata
 
   const doneCount = items.filter(x => mem[x.ch]).length
-  const bothDone = kanaAllDone(state)
+  // const bothDone = kanaAllDone(state)
+  const allDone = doneCount === items.length
 
   const cards = items.map(x => {
     const done = !!mem[x.ch]
@@ -518,9 +527,9 @@ function renderKanaStudy(kind) {
       <div class="card" style="margin-top:12px;">
         <div class="muted small">다음 10개로 넘어가기</div>
         <div style="margin-top:6px;">
-          히라+카타 <b>둘 다</b> 10개 외움완료가 되면 버튼이 활성화돼요.
+          10개 외움완료가 되야 버튼이 활성화돼요.
         </div>
-        <button class="btn ${bothDone ? 'primary' : ''}" id="nextKanaBtn" ${bothDone ? '' : 'disabled'} style="margin-top:10px;">
+        <button class="btn ${allDone ? 'primary' : ''}" id="nextKanaBtn" ${allDone ? '' : 'disabled'} style="margin-top:10px;">
           다음 10개 보기
         </button>
       </div>
@@ -539,10 +548,10 @@ function renderKanaStudy(kind) {
 
   // 다음 10개 버튼
   document.getElementById('nextKanaBtn').onclick = () => {
-    const ok = advanceKanaChapter()
+    const ok = advanceKanaChapter(kind)    
     if (!ok) return
     render()
-    goto('study-hira')
+    goto(isHira ? 'study-hira' : 'study-katta')
   }
 }
 
