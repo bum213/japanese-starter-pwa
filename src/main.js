@@ -257,7 +257,9 @@ function ensureState(s) {
     sets: { hira: [], kata: [] },
     mem: { hira: {}, kata: {} },        // 현재 10개(챕터) 체크용
     totalMem: { hira: {}, kata: {} },   // 누적 외움 기록(퀴즈 출제 범위)
+    pendingWrong: { hira: {}, kata: {} } // ✅ 미해결 오답(누적)
   }
+  s.kana.pendingWrong ??= { hira: {}, kata: {} }
   s.kana.mem ??= { hira: {}, kata: {} }
   s.kana.totalMem ??= { hira: {}, kata: {} }
 
@@ -310,6 +312,10 @@ function kanaCountDone(kind, state) {
 
 function advanceKanaChapter(kind) {
   const s = ensureState(load())
+
+  // ✅ 미해결 오답이 남아있으면 다음 챕터 못 감
+  const pending = (kind === 'hira') ? s.kana.pendingWrong.hira : s.kana.pendingWrong.kata
+  if (pending && Object.keys(pending).length > 0) return false
 
   if (kind === 'hira') {
     if (kanaCountDone('hira', s) !== s.kana.sets.hira.length) return false
@@ -710,17 +716,27 @@ function renderVerbStudy() {
 /** ========= 퀴즈(히라/카타) ========= */
 function pushWrongKana(kind, ch) {
   const s = ensureState(load())
+
+  // (기존) 오늘 오답노트용
   const list = (kind === 'hira') ? s.wrong.hira : s.wrong.kata
   if (!list.includes(ch)) list.push(ch)
 
-  // 현재 챕터에 있는 글자라면 외움 풀기(챕터 진행 제한용)
+  // ✅ (추가) 미해결 오답(누적)에 등록
+  if (kind === 'hira') s.kana.pendingWrong.hira[ch] = true
+  else s.kana.pendingWrong.kata[ch] = true
+
+  // ✅ (추가) 누적 외움(totalMem)에서도 풀기 -> 진행률 -1
+  if (kind === 'hira') delete s.kana.totalMem.hira[ch]
+  else delete s.kana.totalMem.kata[ch]
+
+  // (기존) 현재 챕터에 있으면 현재 mem도 풀기(챕터 진행 제한)
   const set = (kind === 'hira') ? s.kana.sets.hira : s.kana.sets.kata
   const isInCurrent = set.some(x => x.ch === ch)
   if (isInCurrent) {
     if (kind === 'hira') delete s.kana.mem.hira[ch]
     else delete s.kana.mem.kata[ch]
   }
-  // totalMem은 유지
+
   save(s)
 }
 
@@ -989,6 +1005,9 @@ function renderWrong() {
   const kata = w.kata || []
   const verb = w.verb || []
 
+  const pendingHira = Object.keys(state.kana.pendingWrong?.hira || {}).filter(k => state.kana.pendingWrong.hira[k])
+  const pendingKata = Object.keys(state.kana.pendingWrong?.kata || {}).filter(k => state.kana.pendingWrong.kata[k])
+
   base(
     '오늘 오답노트',
     `
@@ -998,6 +1017,24 @@ function renderWrong() {
           ${hira.length ? hira.map(x => `<span class="chip">${escapeHtml(x)}</span>`).join('') : `<span class="muted">없음</span>`}
         </div>
       </div>
+
+      <div class="card" style="margin-top:10px;">
+        <div class="muted small">미해결 오답(히라) - 여기서 외움 눌러야 해결됨</div>
+        <div class="list" style="margin-top:10px;">
+          ${
+            pendingHira.length
+              ? pendingHira.map(ch => `
+                <div class="row">
+                  <div class="big">${escapeHtml(ch)}</div>
+                  <button class="btn primary" data-fix-kind="hira" data-fix-ch="${escapeHtml(ch)}">외움</button>
+                </div>
+              `).join('')
+              : `<div class="muted">없음</div>`
+          }
+        </div>
+      </div>
+
+
 
       <div class="card" style="margin-top:10px;">
         <div class="muted small">카타카나</div>
@@ -1013,6 +1050,24 @@ function renderWrong() {
         </div>
       </div>
 
+
+      <div class="card" style="margin-top:10px;">
+        <div class="muted small">미해결 오답(카타)</div>
+        <div class="list" style="margin-top:10px;">
+          ${
+            pendingKata.length
+              ? pendingKata.map(ch => `
+                <div class="row">
+                  <div class="big">${escapeHtml(ch)}</div>
+                  <button class="btn primary" data-fix-kind="kata" data-fix-ch="${escapeHtml(ch)}">외움</button>
+                </div>
+              `).join('')
+              : `<div class="muted">없음</div>`
+          }
+        </div>
+      </div>
+
+
       <button class="btn" id="clearWrong" style="margin-top:12px;">오늘 오답 초기화</button>
     `
   )
@@ -1025,6 +1080,31 @@ function renderWrong() {
     save(s)
     render()
   }
+
+  // ✅ 미해결 오답 "외움" 처리
+  document.querySelectorAll('[data-fix-kind]').forEach(btn => {
+    btn.onclick = () => {
+      const kind = btn.getAttribute('data-fix-kind') // hira | kata
+      const ch = btn.getAttribute('data-fix-ch')
+
+      const s = ensureState(load())
+
+      if (kind === 'hira') {
+        delete s.kana.pendingWrong.hira[ch]
+        s.kana.totalMem.hira[ch] = true   // ✅ 누적 복구(+1)
+        // (선택) 오늘 오답에서도 제거
+        s.wrong.hira = (s.wrong.hira || []).filter(x => x !== ch)
+      } else {
+        delete s.kana.pendingWrong.kata[ch]
+        s.kana.totalMem.kata[ch] = true
+        s.wrong.kata = (s.wrong.kata || []).filter(x => x !== ch)
+      }
+
+      save(s)
+      render()
+    }
+  })
+
 }
 
 /** ========= 토스트 ========= */
