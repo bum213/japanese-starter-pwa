@@ -50,7 +50,6 @@ function normalizeKRPron(s) {
 
 const H_BASE = 0xAC00
 const H_END = 0xD7A3
-const L_COUNT = 19
 const V_COUNT = 21
 const T_COUNT = 28
 const N_COUNT = V_COUNT * T_COUNT
@@ -60,7 +59,7 @@ const L_EQUIV = {
   0:0,  1:0, 15:0, // ㄱ/ㄲ/ㅋ => ㄱ
   3:3,  4:3, 16:3, // ㄷ/ㄸ/ㅌ => ㄷ
   7:7,  8:7, 17:7, // ㅂ/ㅃ/ㅍ => ㅂ
-  9:9, 10:9,       // ㅅ/ㅆ => ㅅ
+  9:9, 10:9,        // ㅅ/ㅆ => ㅅ
   12:12, 13:12, 14:12 // ㅈ/ㅉ/ㅊ => ㅈ
 }
 
@@ -151,6 +150,10 @@ const KATAKANA = [
   { ch: 'ャ', rd: 'ya' }, { ch: 'ュ', rd: 'yu' }, { ch: 'ョ', rd: 'yo' }, { ch: 'ッ', rd: 'tsu' },
   { ch: 'ー', rd: '-' },
 ]
+
+// ✅ 기본 46개만 사용
+const HIRA_46 = HIRAGANA.slice(0, 46)
+const KATA_46 = KATAKANA.slice(0, 46)
 
 /** ========= 히라/카타 발음(한글) ========= */
 const ROMAJI_TO_KR = {
@@ -273,10 +276,11 @@ function ensureState(s) {
   // 히라/카타는 챕터 진행(날짜 상관 없이 유지)
   s.kana ??= {
     sets: { hira: [], kata: [] },
-    mem: { hira: {}, kata: {} }, // { 'あ': true } 형태
-    totalMem: {hira: {}, kata: {}},
+    mem: { hira: {}, kata: {} },        // 현재 10개(챕터) 체크용
+    totalMem: { hira: {}, kata: {} },   // ✅ 누적 외움 기록(퀴즈 출제 범위)
   }
-  s.kana.totalMem ??= {hira: {}, kata: {} }
+  s.kana.mem ??= { hira: {}, kata: {} }
+  s.kana.totalMem ??= { hira: {}, kata: {} }
 
   // 동사는 날짜 단위
   s.today ??= { key: null, sets: { verb: [] } }
@@ -285,15 +289,13 @@ function ensureState(s) {
   // 오답(오늘 기준)
   s.wrong ??= { key: null, hira: [], kata: [], verb: [] }
 
-  // 1) kana 세트가 비어있으면 현재 인덱스로 10개 생성
+  // 1) kana 세트가 비어있으면 현재 인덱스로 10개 생성 (✅ 46개 풀에서)
   if (!Array.isArray(s.kana.sets.hira) || s.kana.sets.hira.length === 0) {
-    s.kana.sets.hira = takeN(HIRAGANA, 'hiraIndex', s, 10, false) // index 증가시키지 않음
+    s.kana.sets.hira = takeN(HIRA_46, 'hiraIndex', s, 10, false)
   }
   if (!Array.isArray(s.kana.sets.kata) || s.kana.sets.kata.length === 0) {
-    s.kana.sets.kata = takeN(KATAKANA, 'kataIndex', s, 10, false)
+    s.kana.sets.kata = takeN(KATA_46, 'kataIndex', s, 10, false)
   }
-  s.kana.mem.hira ??= {}
-  s.kana.mem.kata ??= {}
 
   // 2) verbs는 날짜 바뀌면 다음 10개 자동
   const t = getTodayKey()
@@ -332,30 +334,20 @@ function kanaCountDone(kind, state) {
   const mem = kind === 'hira' ? state.kana.mem.hira : state.kana.mem.kata
   return set.filter(x => mem[x.ch]).length
 }
-function kanaAllDone(state) {
-  return kanaCountDone('hira', state) === state.kana.sets.hira.length
-      && kanaCountDone('kata', state) === state.kana.sets.kata.length
-}
 
 function advanceKanaChapter(kind) {
   // kind: 'hira' | 'kata'
   const s = ensureState(load())
 
   if (kind === 'hira') {
-    // 히라 10개 전부 외움완료일 때만
     if (kanaCountDone('hira', s) !== s.kana.sets.hira.length) return false
-
-    // 다음 10개로
-    s.progress.hiraIndex = (s.progress.hiraIndex + 10) % HIRAGANA.length
-    s.kana.sets.hira = takeN(HIRAGANA, 'hiraIndex', s, 10, false)
+    s.progress.hiraIndex = (s.progress.hiraIndex + 10) % HIRA_46.length
+    s.kana.sets.hira = takeN(HIRA_46, 'hiraIndex', s, 10, false)
     s.kana.mem.hira = {}
   } else {
-    // 카타 10개 전부 외움완료일 때만
     if (kanaCountDone('kata', s) !== s.kana.sets.kata.length) return false
-
-    // 다음 10개로
-    s.progress.kataIndex = (s.progress.kataIndex + 10) % KATAKANA.length
-    s.kana.sets.kata = takeN(KATAKANA, 'kataIndex', s, 10, false)
+    s.progress.kataIndex = (s.progress.kataIndex + 10) % KATA_46.length
+    s.kana.sets.kata = takeN(KATA_46, 'kataIndex', s, 10, false)
     s.kana.mem.kata = {}
   }
 
@@ -363,6 +355,13 @@ function advanceKanaChapter(kind) {
   return true
 }
 
+/** ========= 누적 외움 풀(퀴즈 출제 범위) ========= */
+function getMemorizedKanaPool(kind, state) {
+  const totalMem = kind === 'hira' ? state.kana.totalMem.hira : state.kana.totalMem.kata
+  const pool = kind === 'hira' ? HIRA_46 : KATA_46
+  // totalMem에 true로 체크된 글자만, 46개 풀에서 매칭
+  return pool.filter(x => totalMem && totalMem[x.ch])
+}
 
 /** ========= 라우팅 ========= */
 const app = document.querySelector('#app')
@@ -421,6 +420,7 @@ function renderHome() {
   const tKey = state.today.key
   const w = state.wrong
 
+  // ✅ 누적 외움 기준 진행률(46개)
   const hiraDone = Object.keys(state.kana.totalMem.hira || {}).filter(k => state.kana.totalMem.hira[k]).length
   const kataDone = Object.keys(state.kana.totalMem.kata || {}).filter(k => state.kana.totalMem.kata[k]).length
 
@@ -433,13 +433,13 @@ function renderHome() {
       </div>
 
       <div class="card" style="margin-top:12px;">
-        <div class="muted small">히라/카타 진행(현재 10개 챕터)</div>
+        <div class="muted small">히라/카타 누적 진행</div>
         <div style="margin-top:6px;">
-          히라 외움완료: <b>${hiraDone}</b> / ${HIRAGANA.length}<br/>
-          카타 외움완료: <b>${kataDone}</b> / ${KATAKANA.length}
+          히라 외움완료: <b>${hiraDone}</b> / ${HIRA_46.length}<br/>
+          카타 외움완료: <b>${kataDone}</b> / ${KATA_46.length}
         </div>
         <div class="muted small" style="margin-top:8px;">
-          ※ 10개 외움완료가 되면 다음 10개로 넘어갈 수 있어요.
+          ※ 학습은 “오늘의 10개(챕터)”로 진행하고, 퀴즈는 “지금까지 외운 것(누적)”에서만 나와요.
         </div>
       </div>
 
@@ -484,9 +484,6 @@ function renderHome() {
 function setKanaMem(kind, ch, value) {
   const s = ensureState(load())
 
-  // if (kind === 'hira') s.kana.mem.hira[ch] = value
-  // else s.kana.mem.kata[ch] = value
-
   if (kind === 'hira') {
     s.kana.mem.hira[ch] = value
     s.kana.totalMem.hira[ch] = value   // ✅ 누적
@@ -494,10 +491,6 @@ function setKanaMem(kind, ch, value) {
     s.kana.mem.kata[ch] = value
     s.kana.totalMem.kata[ch] = value   // ✅ 누적
   }
-
-
-
-
 
   save(s)
 }
@@ -509,7 +502,6 @@ function renderKanaStudy(kind) {
   const mem = isHira ? state.kana.mem.hira : state.kana.mem.kata
 
   const doneCount = items.filter(x => mem[x.ch]).length
-  // const bothDone = kanaAllDone(state)
   const allDone = doneCount === items.length
 
   const cards = items.map(x => {
@@ -531,10 +523,10 @@ function renderKanaStudy(kind) {
     title,
     `
       <div class="card">
-        <div class="muted small">외움 진행</div>
+        <div class="muted small">외움 진행(현재 챕터)</div>
         <div style="margin-top:6px;"><b>${doneCount}</b> / 10</div>
         <div class="muted small" style="margin-top:8px;">
-          ※ 글자마다 <b>외움</b>을 눌러야 완료돼요. 퀴즈에서 틀리면 자동으로 외움이 풀립니다.
+          ※ 글자마다 <b>외움</b>을 눌러야 완료돼요. 퀴즈에서 틀리면(현재 챕터 글자면) 자동으로 외움이 풀립니다.
         </div>
       </div>
 
@@ -564,10 +556,10 @@ function renderKanaStudy(kind) {
 
   // 다음 10개 버튼
   document.getElementById('nextKanaBtn').onclick = () => {
-    const ok = advanceKanaChapter(kind)    
+    const ok = advanceKanaChapter(kind)
     if (!ok) return
     render()
-    goto(isHira ? 'study-hira' : 'study-katta')
+    goto(isHira ? 'study-hira' : 'study-kata') // ✅ 오타 수정
   }
 }
 
@@ -646,7 +638,7 @@ function pushWrongKana(kind, ch) {
   const list = (kind === 'hira') ? s.wrong.hira : s.wrong.kata
   if (!list.includes(ch)) list.push(ch)
 
-  // ✅ 현재 챕터에 있는 글자라면 외움 풀기
+  // ✅ 현재 챕터에 있는 글자라면 외움 풀기(챕터 진행 제한용)
   const set = (kind === 'hira') ? s.kana.sets.hira : s.kana.sets.kata
   const isInCurrent = set.some(x => x.ch === ch)
   if (isInCurrent) {
@@ -654,13 +646,37 @@ function pushWrongKana(kind, ch) {
     else delete s.kana.mem.kata[ch]
   }
 
+  // ✅ 누적(totalMem)은 유지(“한 번 외웠던 기록”은 남겨둠)
   save(s)
 }
 
 function renderKanaQuiz(kind) {
   const isHira = kind === 'hira'
   const title = isHira ? '히라가나 퀴즈' : '카타카나 퀴즈'
-  const pool = isHira ? state.kana.sets.hira : state.kana.sets.kata
+
+  // ✅ 누적 외움(totalMem) 기준으로만 출제
+  const pool = getMemorizedKanaPool(kind, state)
+
+  // ✅ 0개면 안내
+  if (!pool || pool.length === 0) {
+    base(
+      title,
+      `
+        <div class="card">
+          <div style="font-weight:900;">아직 외움완료한 글자가 없어요 😅</div>
+          <div class="muted" style="margin-top:8px;">
+            먼저 <b>${isHira ? '히라가나' : '카타카나'} 오늘의 10개</b>에서
+            몇 개라도 <b>외움</b>을 눌러 완료한 뒤 퀴즈를 시작해 주세요.
+          </div>
+          <button class="btn primary" id="goStudy" style="margin-top:12px;">
+            외우러 가기
+          </button>
+        </div>
+      `
+    )
+    document.getElementById('goStudy').onclick = () => goto(isHira ? 'study-hira' : 'study-kata')
+    return
+  }
 
   base(
     title,
@@ -676,7 +692,7 @@ function renderKanaQuiz(kind) {
           ※ 정답은 <b>한글 발음</b>으로 입력 (예: か→카, し→시, つ→츠)
         </div>
         <div class="muted small" style="margin-top:6px;">
-          ※ 외움완료 상태여도 퀴즈에서 틀리면 해당 글자는 <b>외움이 풀립니다</b>.
+          ※ 이 퀴즈는 <b>지금까지 외움완료(누적)</b>한 글자에서만 출제돼요. (현재 ${pool.length}개)
         </div>
       </div>
 
@@ -1000,4 +1016,3 @@ function render() {
 }
 
 render()
-
