@@ -274,7 +274,9 @@ function ensureState(s) {
   s.kana ??= {
     sets: { hira: [], kata: [] },
     mem: { hira: {}, kata: {} }, // { 'あ': true } 형태
+    totalMem: {hira: {}, kata: {}},
   }
+  s.kana.totalMem ??= {hira: {}, kata: {} }
 
   // 동사는 날짜 단위
   s.today ??= { key: null, sets: { verb: [] } }
@@ -419,8 +421,8 @@ function renderHome() {
   const tKey = state.today.key
   const w = state.wrong
 
-  const hiraDone = kanaCountDone('hira', state)
-  const kataDone = kanaCountDone('kata', state)
+  const hiraDone = Object.keys(state.kana.totalMem.hira || {}).filter(k => state.kana.totalMem.hira[k]).length
+  const kataDone = Object.keys(state.kana.totalMem.kata || {}).filter(k => state.kana.totalMem.kata[k]).length
 
   base(
     `안녕, ${nick} 👋`,
@@ -433,8 +435,8 @@ function renderHome() {
       <div class="card" style="margin-top:12px;">
         <div class="muted small">히라/카타 진행(현재 10개 챕터)</div>
         <div style="margin-top:6px;">
-          히라 외움완료: <b>${hiraDone}</b> / 10<br/>
-          카타 외움완료: <b>${kataDone}</b> / 10
+          히라 외움완료: <b>${hiraDone}</b> / ${HIRAGANA.length}<br/>
+          카타 외움완료: <b>${kataDone}</b> / ${KATAKANA.length}
         </div>
         <div class="muted small" style="margin-top:8px;">
           ※ 10개 외움완료가 되면 다음 10개로 넘어갈 수 있어요.
@@ -481,8 +483,22 @@ function renderHome() {
 /** ========= 학습(히라/카타): 외움 버튼 ========= */
 function setKanaMem(kind, ch, value) {
   const s = ensureState(load())
-  if (kind === 'hira') s.kana.mem.hira[ch] = value
-  else s.kana.mem.kata[ch] = value
+
+  // if (kind === 'hira') s.kana.mem.hira[ch] = value
+  // else s.kana.mem.kata[ch] = value
+
+  if (kind === 'hira') {
+    s.kana.mem.hira[ch] = value
+    s.kana.totalMem.hira[ch] = value   // ✅ 누적
+  } else {
+    s.kana.mem.kata[ch] = value
+    s.kana.totalMem.kata[ch] = value   // ✅ 누적
+  }
+
+
+
+
+
   save(s)
 }
 
