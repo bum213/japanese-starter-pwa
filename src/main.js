@@ -32,11 +32,7 @@ function shuffle(arr) {
   return a
 }
 
-/** ========= “조금 관대” 채점 =========
- * - 공백/중점 제거
- * - 하이픈(-) 있어도/없어도 OK
- * - 초성(ㄲ/ㅋ/ㄱ, ㄸ/ㅌ/ㄷ, ㅃ/ㅍ/ㅂ, ㅆ/ㅅ, ㅉ/ㅊ/ㅈ) 정도는 관대하게 동일 취급
- */
+/** ========= “조금 관대” 채점 ========= */
 function normalizeKRPron(s) {
   return String(s || '')
     .replaceAll('·', '')
@@ -67,10 +63,7 @@ function softenInitialHangul(str) {
   let out = ''
   for (const ch of str) {
     const code = ch.charCodeAt(0)
-    if (code < H_BASE || code > H_END) {
-      out += ch
-      continue
-    }
+    if (code < H_BASE || code > H_END) { out += ch; continue }
     const sIndex = code - H_BASE
     const L = Math.floor(sIndex / N_COUNT)
     const V = Math.floor((sIndex % N_COUNT) / T_COUNT)
@@ -117,13 +110,11 @@ const HIRAGANA = [
   { ch: 'や', rd: 'ya' }, { ch: 'ゆ', rd: 'yu' }, { ch: 'よ', rd: 'yo' },
   { ch: 'ら', rd: 'ra' }, { ch: 'り', rd: 'ri' }, { ch: 'る', rd: 'ru' }, { ch: 'れ', rd: 're' }, { ch: 'ろ', rd: 'ro' },
   { ch: 'わ', rd: 'wa' }, { ch: 'を', rd: 'wo' }, { ch: 'ん', rd: 'n' },
-
   { ch: 'が', rd: 'ga' }, { ch: 'ぎ', rd: 'gi' }, { ch: 'ぐ', rd: 'gu' }, { ch: 'げ', rd: 'ge' }, { ch: 'ご', rd: 'go' },
   { ch: 'ざ', rd: 'za' }, { ch: 'じ', rd: 'ji' }, { ch: 'ず', rd: 'zu' }, { ch: 'ぜ', rd: 'ze' }, { ch: 'ぞ', rd: 'zo' },
   { ch: 'だ', rd: 'da' }, { ch: 'ぢ', rd: 'ji' }, { ch: 'づ', rd: 'zu' }, { ch: 'で', rd: 'de' }, { ch: 'ど', rd: 'do' },
   { ch: 'ば', rd: 'ba' }, { ch: 'び', rd: 'bi' }, { ch: 'ぶ', rd: 'bu' }, { ch: 'べ', rd: 'be' }, { ch: 'ぼ', rd: 'bo' },
   { ch: 'ぱ', rd: 'pa' }, { ch: 'ぴ', rd: 'pi' }, { ch: 'ぷ', rd: 'pu' }, { ch: 'ぺ', rd: 'pe' }, { ch: 'ぽ', rd: 'po' },
-
   { ch: 'ぁ', rd: 'a' }, { ch: 'ぃ', rd: 'i' }, { ch: 'ぅ', rd: 'u' }, { ch: 'ぇ', rd: 'e' }, { ch: 'ぉ', rd: 'o' },
   { ch: 'ゃ', rd: 'ya' }, { ch: 'ゅ', rd: 'yu' }, { ch: 'ょ', rd: 'yo' }, { ch: 'っ', rd: 'tsu' },
 ]
@@ -139,13 +130,11 @@ const KATAKANA = [
   { ch: 'ヤ', rd: 'ya' }, { ch: 'ユ', rd: 'yu' }, { ch: 'ヨ', rd: 'yo' },
   { ch: 'ラ', rd: 'ra' }, { ch: 'リ', rd: 'ri' }, { ch: 'ル', rd: 'ru' }, { ch: 'レ', rd: 're' }, { ch: 'ロ', rd: 'ro' },
   { ch: 'ワ', rd: 'wa' }, { ch: 'ヲ', rd: 'wo' }, { ch: 'ン', rd: 'n' },
-
   { ch: 'ガ', rd: 'ga' }, { ch: 'ギ', rd: 'gi' }, { ch: 'グ', rd: 'gu' }, { ch: 'ゲ', rd: 'ge' }, { ch: 'ゴ', rd: 'go' },
   { ch: 'ザ', rd: 'za' }, { ch: 'ジ', rd: 'ji' }, { ch: 'ズ', rd: 'zu' }, { ch: 'ゼ', rd: 'ze' }, { ch: 'ゾ', rd: 'zo' },
   { ch: 'ダ', rd: 'da' }, { ch: 'ヂ', rd: 'ji' }, { ch: 'ヅ', rd: 'zu' }, { ch: 'デ', rd: 'de' }, { ch: 'ド', rd: 'do' },
   { ch: 'バ', rd: 'ba' }, { ch: 'ビ', rd: 'bi' }, { ch: 'ブ', rd: 'bu' }, { ch: 'ベ', rd: 'be' }, { ch: 'ボ', rd: 'bo' },
   { ch: 'パ', rd: 'pa' }, { ch: 'ピ', rd: 'pi' }, { ch: 'プ', rd: 'pu' }, { ch: 'ペ', rd: 'pe' }, { ch: 'ポ', rd: 'po' },
-
   { ch: 'ァ', rd: 'a' }, { ch: 'ィ', rd: 'i' }, { ch: 'ゥ', rd: 'u' }, { ch: 'ェ', rd: 'e' }, { ch: 'ォ', rd: 'o' },
   { ch: 'ャ', rd: 'ya' }, { ch: 'ュ', rd: 'yu' }, { ch: 'ョ', rd: 'yo' }, { ch: 'ッ', rd: 'tsu' },
   { ch: 'ー', rd: '-' },
@@ -167,11 +156,6 @@ const ROMAJI_TO_KR = {
   ya:'야', yu:'유', yo:'요',
   ra:'라', ri:'리', ru:'루', re:'레', ro:'로',
   wa:'와', wo:'오', n:'ㄴ',
-  ga:'가', gi:'기', gu:'구', ge:'게', go:'고',
-  za:'자', ji:'지', zu:'즈', ze:'제', zo:'조',
-  da:'다', de:'데', do:'도',
-  ba:'바', bi:'비', bu:'부', be:'베', bo:'보',
-  pa:'파', pi:'피', pu:'푸', pe:'페', po:'포',
   '-':'-',
 }
 const ROMAJI_ALT_KR = {
@@ -179,7 +163,6 @@ const ROMAJI_ALT_KR = {
   chi: ['치','티'],
   tsu: ['츠','쓰'],
   fu:  ['후','푸'],
-  ji:  ['지','찌'],
   n:   ['ㄴ','응'],
   wo:  ['오','워'],
 }
@@ -201,7 +184,7 @@ function mkVerb(verb, meaning, kr, jpPairs, answerKR) {
     example: {
       kr,
       jpTokens: jpPairs.map(([w, m]) => ({ w, m })),
-      answerKR, // 장음은 - 표기
+      answerKR,
     }
   }
 }
@@ -266,30 +249,23 @@ const VERBS = [
   ], '와타시와 운도-오 시마스'),
 ]
 
-/** ========= 상태 모델 =========
- * - kana: 히라/카타는 “챕터 완료”로 다음 10개 진행(날짜 무관)
- * - verbs: “하루 10개” (날짜 바뀌면 자동 다음 10개)
- */
+/** ========= 상태 모델 ========= */
 function ensureState(s) {
   s.progress ??= { hiraIndex: 0, kataIndex: 0, verbIndex: 0 }
 
-  // 히라/카타는 챕터 진행(날짜 상관 없이 유지)
   s.kana ??= {
     sets: { hira: [], kata: [] },
     mem: { hira: {}, kata: {} },        // 현재 10개(챕터) 체크용
-    totalMem: { hira: {}, kata: {} },   // ✅ 누적 외움 기록(퀴즈 출제 범위)
+    totalMem: { hira: {}, kata: {} },   // 누적 외움 기록(퀴즈 출제 범위)
   }
   s.kana.mem ??= { hira: {}, kata: {} }
   s.kana.totalMem ??= { hira: {}, kata: {} }
 
-  // 동사는 날짜 단위
   s.today ??= { key: null, sets: { verb: [] } }
-  s.verbMem ??= { key: null, mem: {} } // {key: 'YYYY-MM-DD', mem:{'いく':true}}
-
-  // 오답(오늘 기준)
+  s.verbMem ??= { key: null, mem: {} }
   s.wrong ??= { key: null, hira: [], kata: [], verb: [] }
 
-  // 1) kana 세트가 비어있으면 현재 인덱스로 10개 생성 (✅ 46개 풀에서)
+  // kana 세트 비어있으면 46개 풀에서 10개 생성
   if (!Array.isArray(s.kana.sets.hira) || s.kana.sets.hira.length === 0) {
     s.kana.sets.hira = takeN(HIRA_46, 'hiraIndex', s, 10, false)
   }
@@ -297,28 +273,25 @@ function ensureState(s) {
     s.kana.sets.kata = takeN(KATA_46, 'kataIndex', s, 10, false)
   }
 
-  // 2) verbs는 날짜 바뀌면 다음 10개 자동
+  // verbs: 날짜 바뀌면 다음 10개
   const t = getTodayKey()
   if (s.today.key !== t) {
     s.today.key = t
-    s.today.sets.verb = takeN(VERBS, 'verbIndex', s, 10, true) // index 증가
+    s.today.sets.verb = takeN(VERBS, 'verbIndex', s, 10, true)
     s.verbMem.key = t
     s.verbMem.mem = {}
   }
 
-  // 3) 오답도 날짜 기준 초기화
+  // 오답: 날짜 바뀌면 초기화
   if (s.wrong.key !== t) {
     s.wrong.key = t
     s.wrong.hira = []
     s.wrong.kata = []
     s.wrong.verb = []
   }
-
   return s
 }
 
-// advance=true면 progress 인덱스를 실제로 증가(동사)
-// advance=false면 “현재 챕터 보기”만 (히라/카타)
 function takeN(pool, key, s, n, advance = true) {
   const total = pool.length
   const start = s.progress[key] || 0
@@ -336,7 +309,6 @@ function kanaCountDone(kind, state) {
 }
 
 function advanceKanaChapter(kind) {
-  // kind: 'hira' | 'kata'
   const s = ensureState(load())
 
   if (kind === 'hira') {
@@ -359,7 +331,6 @@ function advanceKanaChapter(kind) {
 function getMemorizedKanaPool(kind, state) {
   const totalMem = kind === 'hira' ? state.kana.totalMem.hira : state.kana.totalMem.kata
   const pool = kind === 'hira' ? HIRA_46 : KATA_46
-  // totalMem에 true로 체크된 글자만, 46개 풀에서 매칭
   return pool.filter(x => totalMem && totalMem[x.ch])
 }
 
@@ -376,28 +347,53 @@ function goto(route) {
 }
 window.addEventListener('hashchange', render)
 
+/** ========= 탭 활성 ========= */
+function activeTab(tab) {
+  const route = window.location.hash.replace('#','') || 'home'
+  if (route.startsWith('study')) return tab === 'study' ? 'active' : ''
+  if (route.startsWith('quiz')) return tab === 'quiz' ? 'active' : ''
+  if (route === 'menu' || route === 'wrong') return tab === 'menu' ? 'active' : ''
+  return tab === 'home' ? 'active' : ''
+}
+
+/** ========= 공통 레이아웃 (탭바 포함) ========= */
 function base(title, body) {
   app.innerHTML = `
     <div class="wrap">
-      <div class="top">
-        <div>
-          <div class="small">찐초보 일본어</div>
-          <h2>${title}</h2>
-        </div>
-        <button class="btn" id="homeBtn">홈</button>
-      </div>
+      <div class="small muted" style="margin-bottom:6px;">찐초보 일본어</div>
+      <h2 style="margin-bottom:14px;">${title}</h2>
       ${body}
     </div>
+
+    <div class="tabbar">
+      <div class="tab ${activeTab('home')}" data-tab="home">
+        <div class="ico">🏠</div>
+        홈
+      </div>
+      <div class="tab ${activeTab('study')}" data-tab="study">
+        <div class="ico">📚</div>
+        외우기
+      </div>
+      <div class="tab ${activeTab('quiz')}" data-tab="quiz">
+        <div class="ico">📝</div>
+        퀴즈
+      </div>
+      <div class="tab ${activeTab('menu')}" data-tab="menu">
+        <div class="ico">☰</div>
+        전체
+      </div>
+    </div>
   `
-  const homeBtn = document.getElementById('homeBtn')
-  if (homeBtn) homeBtn.onclick = () => goto('home')
+  document.querySelectorAll('.tab').forEach(t => {
+    t.onclick = () => goto(t.dataset.tab)
+  })
 }
 
 /** ========= 닉네임 ========= */
 function renderNickname() {
   app.innerHTML = `
     <div class="wrap">
-      <h1>찐초보 일본어 스타터 by SB</h1>
+      <h1 style="margin-bottom:10px;">찐초보 일본어 스타터</h1>
       <p class="muted">닉네임만 정하면 바로 시작해요. (개인정보 없음)</p>
       <input class="input" id="nick" placeholder="닉네임" /></p>
       <button class="btn primary" id="startBtn">시작하기</button>
@@ -420,7 +416,6 @@ function renderHome() {
   const tKey = state.today.key
   const w = state.wrong
 
-  // ✅ 누적 외움 기준 진행률(46개)
   const hiraDone = Object.keys(state.kana.totalMem.hira || {}).filter(k => state.kana.totalMem.hira[k]).length
   const kataDone = Object.keys(state.kana.totalMem.kata || {}).filter(k => state.kana.totalMem.kata[k]).length
 
@@ -429,17 +424,57 @@ function renderHome() {
     `
       <div class="card">
         <div class="muted small">오늘 날짜</div>
-        <div><b>${tKey}</b></div>
+        <div style="font-size:18px;font-weight:900;margin-top:6px;">${tKey}</div>
       </div>
 
       <div class="card" style="margin-top:12px;">
         <div class="muted small">히라/카타 누적 진행</div>
-        <div style="margin-top:6px;">
-          히라 외움완료: <b>${hiraDone}</b> / ${HIRA_46.length}<br/>
-          카타 외움완료: <b>${kataDone}</b> / ${KATA_46.length}
+        <div style="margin-top:8px;line-height:1.8;">
+          히라: <b>${hiraDone}</b> / ${HIRA_46.length}<br/>
+          카타: <b>${kataDone}</b> / ${KATA_46.length}
         </div>
-        <div class="muted small" style="margin-top:8px;">
-          ※ 학습은 “오늘의 10개(챕터)”로 진행하고, 퀴즈는 “지금까지 외운 것(누적)”에서만 나와요.
+        <div class="muted small" style="margin-top:10px;">
+          ※ 학습은 “오늘의 10개(챕터)” / 퀴즈는 “지금까지 외운 것(누적)”에서만 출제
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:12px;">
+        <div class="muted small">오늘 오답노트</div>
+        <div style="margin-top:8px;">
+          히라 <b>${w.hira.length}</b> · 카타 <b>${w.kata.length}</b> · 동사 <b>${w.verb.length}</b>
+        </div>
+        <button class="btn" id="goWrong" style="margin-top:12px;">오답 보기</button>
+      </div>
+
+      <div class="grid2" style="margin-top:12px;">
+        <button class="btn primary" id="goStudy">외우기</button>
+        <button class="btn primary" id="goQuiz">퀴즈</button>
+      </div>
+    `
+  )
+
+  document.getElementById('goWrong').onclick = () => goto('wrong')
+  document.getElementById('goStudy').onclick = () => goto('study')
+  document.getElementById('goQuiz').onclick = () => goto('quiz')
+}
+
+/** ========= 외우기 허브 ========= */
+function renderStudyHub() {
+  const hiraNow = kanaCountDone('hira', state)
+  const kataNow = kanaCountDone('kata', state)
+  const verbNow = (state.verbMem && state.verbMem.key === state.today.key)
+    ? state.today.sets.verb.filter(v => state.verbMem.mem[v.verb]).length
+    : 0
+
+  base(
+    '외우기',
+    `
+      <div class="card">
+        <div class="muted small">오늘/현재 진행</div>
+        <div style="margin-top:8px;line-height:1.9;">
+          히라(현재 챕터): <b>${hiraNow}</b> / 10<br/>
+          카타(현재 챕터): <b>${kataNow}</b> / 10<br/>
+          동사(오늘): <b>${verbNow}</b> / 10
         </div>
       </div>
 
@@ -447,20 +482,6 @@ function renderHome() {
         <button class="btn primary" id="hiraStudy">히라가나 오늘의 10개</button>
         <button class="btn primary" id="kataStudy">카타카나 오늘의 10개</button>
         <button class="btn primary" id="verbStudy">동사 오늘의 10개</button>
-        <button class="btn" id="hiraQuiz">히라 퀴즈</button>
-        <button class="btn" id="kataQuiz">카타 퀴즈</button>
-        <button class="btn" id="verbQuiz">동사 문장 퀴즈</button>
-      </div>
-
-      <div class="card" style="margin-top:12px;">
-        <div class="muted small">오늘 오답노트(개수)</div>
-        <div style="margin-top:6px;">
-          히라: <b>${w.hira.length}</b> / 카타: <b>${w.kata.length}</b> / 동사: <b>${w.verb.length}</b>
-        </div>
-        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
-          <button class="btn" id="wrongBtn">오답 보기</button>
-          <button class="btn" id="resetAllBtn">전체 초기화</button>
-        </div>
       </div>
     `
   )
@@ -468,14 +489,75 @@ function renderHome() {
   document.getElementById('hiraStudy').onclick = () => goto('study-hira')
   document.getElementById('kataStudy').onclick = () => goto('study-kata')
   document.getElementById('verbStudy').onclick = () => goto('study-verb')
+}
 
+/** ========= 퀴즈 허브 ========= */
+function renderQuizHub() {
+  const hiraPool = getMemorizedKanaPool('hira', state).length
+  const kataPool = getMemorizedKanaPool('kata', state).length
+  base(
+    '퀴즈',
+    `
+      <div class="card">
+        <div class="muted small">출제 범위(누적 외움 기준)</div>
+        <div style="margin-top:8px;line-height:1.9;">
+          히라: <b>${hiraPool}</b>개 · 카타: <b>${kataPool}</b>개<br/>
+          동사: <b>오늘의 10개</b>에서 출제
+        </div>
+      </div>
+
+      <div class="grid" style="margin-top:12px;">
+        <button class="btn primary" id="hiraQuiz">히라 퀴즈</button>
+        <button class="btn primary" id="kataQuiz">카타 퀴즈</button>
+        <button class="btn primary" id="verbQuiz">동사 문장 퀴즈</button>
+      </div>
+    `
+  )
   document.getElementById('hiraQuiz').onclick = () => goto('quiz-hira')
   document.getElementById('kataQuiz').onclick = () => goto('quiz-kata')
   document.getElementById('verbQuiz').onclick = () => goto('quiz-verb')
+}
+
+/** ========= 전체(메뉴) ========= */
+function renderMenu() {
+  const hiraDone = Object.keys(state.kana.totalMem.hira || {}).filter(k => state.kana.totalMem.hira[k]).length
+  const kataDone = Object.keys(state.kana.totalMem.kata || {}).filter(k => state.kana.totalMem.kata[k]).length
+
+  base(
+    '전체',
+    `
+      <div class="card">
+        <div class="muted small">내 진행</div>
+        <div style="margin-top:8px;line-height:1.9;">
+          히라 누적: <b>${hiraDone}</b> / ${HIRA_46.length}<br/>
+          카타 누적: <b>${kataDone}</b> / ${KATA_46.length}<br/>
+          오늘 날짜: <b>${state.today.key}</b>
+        </div>
+      </div>
+
+      <div class="grid" style="margin-top:12px;">
+        <button class="btn" id="wrongBtn">오늘 오답노트</button>
+        <button class="btn danger" id="resetAllBtn">전체 초기화</button>
+      </div>
+
+      <div class="card" style="margin-top:12px;">
+        <div class="muted small">닉네임 변경</div>
+        <div class="muted small" style="margin-top:8px;">지금 닉네임: <b>${escapeHtml(state.nickname || '')}</b></div>
+        <input class="input" id="newNick" placeholder="새 닉네임" style="margin-top:10px;" />
+        <button class="btn primary" id="saveNick" style="margin-top:10px;">저장</button>
+      </div>
+    `
+  )
 
   document.getElementById('wrongBtn').onclick = () => goto('wrong')
-  document.getElementById('resetAllBtn').onclick = () => {
-    hardReset()
+  document.getElementById('resetAllBtn').onclick = () => { hardReset(); render() }
+
+  document.getElementById('saveNick').onclick = () => {
+    const v = document.getElementById('newNick').value.trim()
+    if (!v) return
+    const s = ensureState(load())
+    s.nickname = v
+    save(s)
     render()
   }
 }
@@ -483,15 +565,13 @@ function renderHome() {
 /** ========= 학습(히라/카타): 외움 버튼 ========= */
 function setKanaMem(kind, ch, value) {
   const s = ensureState(load())
-
   if (kind === 'hira') {
     s.kana.mem.hira[ch] = value
-    s.kana.totalMem.hira[ch] = value   // ✅ 누적
+    s.kana.totalMem.hira[ch] = value
   } else {
     s.kana.mem.kata[ch] = value
-    s.kana.totalMem.kata[ch] = value   // ✅ 누적
+    s.kana.totalMem.kata[ch] = value
   }
-
   save(s)
 }
 
@@ -524,19 +604,17 @@ function renderKanaStudy(kind) {
     `
       <div class="card">
         <div class="muted small">외움 진행(현재 챕터)</div>
-        <div style="margin-top:6px;"><b>${doneCount}</b> / 10</div>
-        <div class="muted small" style="margin-top:8px;">
-          ※ 글자마다 <b>외움</b>을 눌러야 완료돼요. 퀴즈에서 틀리면(현재 챕터 글자면) 자동으로 외움이 풀립니다.
+        <div style="margin-top:8px;font-size:18px;"><b>${doneCount}</b> / 10</div>
+        <div class="muted small" style="margin-top:10px;">
+          ※ 퀴즈에서 틀리면(현재 챕터 글자면) 자동으로 외움이 풀립니다.
         </div>
       </div>
 
       <div class="list">${cards}</div>
 
       <div class="card" style="margin-top:12px;">
-        <div class="muted small">다음 10개로 넘어가기</div>
-        <div style="margin-top:6px;">
-          10개 외움완료가 되야 버튼이 활성화돼요.
-        </div>
+        <div class="muted small">다음 10개</div>
+        <div class="muted small" style="margin-top:8px;">10개 외움완료가 되야 버튼이 활성화돼요.</div>
         <button class="btn ${allDone ? 'primary' : ''}" id="nextKanaBtn" ${allDone ? '' : 'disabled'} style="margin-top:10px;">
           다음 10개 보기
         </button>
@@ -544,7 +622,6 @@ function renderKanaStudy(kind) {
     `
   )
 
-  // 외움 버튼 바인딩
   document.querySelectorAll('button[data-ch]').forEach(btn => {
     btn.onclick = () => {
       const ch = btn.getAttribute('data-ch')
@@ -554,16 +631,15 @@ function renderKanaStudy(kind) {
     }
   })
 
-  // 다음 10개 버튼
   document.getElementById('nextKanaBtn').onclick = () => {
     const ok = advanceKanaChapter(kind)
     if (!ok) return
     render()
-    goto(isHira ? 'study-hira' : 'study-kata') // ✅ 오타 수정
+    goto(isHira ? 'study-hira' : 'study-kata')
   }
 }
 
-/** ========= 학습(동사): 외움 버튼 (다음 10개는 다음날) ========= */
+/** ========= 학습(동사) ========= */
 function setVerbMem(verb, value) {
   const s = ensureState(load())
   if (s.verbMem.key !== s.today.key) {
@@ -577,7 +653,6 @@ function setVerbMem(verb, value) {
 function renderVerbStudy() {
   const items = state.today.sets.verb
   const mem = (state.verbMem && state.verbMem.key === state.today.key) ? state.verbMem.mem : {}
-
   const doneCount = items.filter(v => mem[v.verb]).length
 
   const cards = items.map(v => {
@@ -586,14 +661,14 @@ function renderVerbStudy() {
     `).join(' ')
     const done = !!mem[v.verb]
     return `
-      <div class="card">
+      <div class="card" style="margin-top:10px;">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
           <div style="font-weight:900;">${escapeHtml(v.verb)} <span class="muted" style="font-weight:700;">(${escapeHtml(v.meaning)})</span></div>
           <button class="btn ${done ? '' : 'primary'}" data-verb="${escapeHtml(v.verb)}" ${done ? 'disabled' : ''}>
             ${done ? '외움완료' : '외움'}
           </button>
         </div>
-        <div style="margin-top:8px;"><b>Q.</b> ${escapeHtml(v.example.kr)}</div>
+        <div style="margin-top:10px;"><b>Q.</b> ${escapeHtml(v.example.kr)}</div>
         <div class="jpLine" style="margin-top:10px;">${tokens}</div>
         <div class="muted small" style="margin-top:10px;"><b>발음(한글)</b>: ${escapeHtml(v.example.answerKR)}</div>
       </div>
@@ -605,17 +680,17 @@ function renderVerbStudy() {
     `
       <div class="card">
         <div class="muted small">외움 진행</div>
-        <div style="margin-top:6px;"><b>${doneCount}</b> / 10</div>
-        <div class="muted small" style="margin-top:8px;">
-          ※ 동사는 <b>하루 10개만</b> 학습해요. 더 하면 다 까먹..
+        <div style="margin-top:8px;font-size:18px;"><b>${doneCount}</b> / 10</div>
+        <div class="muted small" style="margin-top:10px;">
+          ※ 동사는 <b>하루 10개</b>만. 날짜 바뀌면 자동으로 다음 10개!
         </div>
-        <div class="muted small" style="margin-top:6px;">
+        <div class="muted small" style="margin-top:8px;">
           ※ 퀴즈에서 틀리면 해당 동사는 자동으로 외움이 풀립니다.
         </div>
       </div>
 
       <div class="muted small" style="margin-top:10px;">일본어 단어를 누르면 뜻이 떠요.</div>
-      <div class="list">${cards}</div>
+      ${cards}
       ${toastHtml()}
     `
   )
@@ -632,45 +707,39 @@ function renderVerbStudy() {
   })
 }
 
-/** ========= 퀴즈(히라/카타): 틀리면 외움 풀림 ========= */
+/** ========= 퀴즈(히라/카타) ========= */
 function pushWrongKana(kind, ch) {
   const s = ensureState(load())
   const list = (kind === 'hira') ? s.wrong.hira : s.wrong.kata
   if (!list.includes(ch)) list.push(ch)
 
-  // ✅ 현재 챕터에 있는 글자라면 외움 풀기(챕터 진행 제한용)
+  // 현재 챕터에 있는 글자라면 외움 풀기(챕터 진행 제한용)
   const set = (kind === 'hira') ? s.kana.sets.hira : s.kana.sets.kata
   const isInCurrent = set.some(x => x.ch === ch)
   if (isInCurrent) {
     if (kind === 'hira') delete s.kana.mem.hira[ch]
     else delete s.kana.mem.kata[ch]
   }
-
-  // ✅ 누적(totalMem)은 유지(“한 번 외웠던 기록”은 남겨둠)
+  // totalMem은 유지
   save(s)
 }
 
 function renderKanaQuiz(kind) {
   const isHira = kind === 'hira'
   const title = isHira ? '히라가나 퀴즈' : '카타카나 퀴즈'
-
-  // ✅ 누적 외움(totalMem) 기준으로만 출제
   const pool = getMemorizedKanaPool(kind, state)
 
-  // ✅ 0개면 안내
   if (!pool || pool.length === 0) {
     base(
       title,
       `
         <div class="card">
           <div style="font-weight:900;">아직 외움완료한 글자가 없어요 😅</div>
-          <div class="muted" style="margin-top:8px;">
+          <div class="muted" style="margin-top:10px;line-height:1.7;">
             먼저 <b>${isHira ? '히라가나' : '카타카나'} 오늘의 10개</b>에서
             몇 개라도 <b>외움</b>을 눌러 완료한 뒤 퀴즈를 시작해 주세요.
           </div>
-          <button class="btn primary" id="goStudy" style="margin-top:12px;">
-            외우러 가기
-          </button>
+          <button class="btn primary" id="goStudy" style="margin-top:12px;">외우러 가기</button>
         </div>
       `
     )
@@ -683,7 +752,7 @@ function renderKanaQuiz(kind) {
     `
       <div class="card">
         <div class="muted small">문제 수 선택</div>
-        <div class="grid2" style="margin-top:8px;">
+        <div class="grid2" style="margin-top:10px;">
           <button class="btn" data-n="10">10문제</button>
           <button class="btn" data-n="20">20문제</button>
           <button class="btn" data-n="50">50문제</button>
@@ -691,8 +760,8 @@ function renderKanaQuiz(kind) {
         <div class="muted small" style="margin-top:10px;">
           ※ 정답은 <b>한글 발음</b>으로 입력 (예: か→카, し→시, つ→츠)
         </div>
-        <div class="muted small" style="margin-top:6px;">
-          ※ 이 퀴즈는 <b>지금까지 외움완료(누적)</b>한 글자에서만 출제돼요. (현재 ${pool.length}개)
+        <div class="muted small" style="margin-top:8px;">
+          ※ 출제: <b>누적 외움</b> 기준 (현재 ${pool.length}개)
         </div>
       </div>
 
@@ -727,7 +796,7 @@ function startKanaQuiz(todayPool, n, kind) {
     quizArea.innerHTML = `
       <div class="card">
         <div class="muted small">문제 ${idx + 1} / ${questions.length}</div>
-        <div style="font-size:52px;font-weight:900;margin:10px 0;">${q.prompt}</div>
+        <div style="font-size:52px;font-weight:900;margin:14px 0;">${q.prompt}</div>
 
         <input class="input" id="ans" placeholder="발음을 한글로 입력 (예: 카, 시, 츠)" />
         <div class="grid2" style="margin-top:10px;">
@@ -735,7 +804,7 @@ function startKanaQuiz(todayPool, n, kind) {
           <button class="btn" id="skipBtn">모르겠음</button>
         </div>
 
-        <div id="feedback" class="muted" style="margin-top:10px;"></div>
+        <div id="feedback" class="muted" style="margin-top:12px;"></div>
       </div>
     `
     const ans = document.getElementById('ans')
@@ -748,10 +817,9 @@ function startKanaQuiz(todayPool, n, kind) {
       else pushWrongKana(kind, q.prompt)
 
       const right = kanaAnswersKR(q.rd)[0] || '?'
-
       document.getElementById('feedback').innerHTML = ok
         ? `<b>정답!</b> ✅`
-        : `<b>오답</b> ❌ 정답: <b>${escapeHtml(right)}</b><div style="margin-top:6px;">${pickWrongMsg()}</div>`
+        : `<b>오답</b> ❌ 정답: <b>${escapeHtml(right)}</b><div style="margin-top:8px;">${pickWrongMsg()}</div>`
 
       document.getElementById('checkBtn').textContent = (idx === questions.length - 1) ? '결과 보기' : '다음'
       document.getElementById('checkBtn').onclick = () => {
@@ -765,7 +833,7 @@ function startKanaQuiz(todayPool, n, kind) {
       pushWrongKana(kind, q.prompt)
       const right = kanaAnswersKR(q.rd)[0] || '?'
       document.getElementById('feedback').innerHTML =
-        `정답: <b>${escapeHtml(right)}</b><div style="margin-top:6px;">${pickWrongMsg()}</div>`
+        `정답: <b>${escapeHtml(right)}</b><div style="margin-top:8px;">${pickWrongMsg()}</div>`
       document.getElementById('checkBtn').textContent = (idx === questions.length - 1) ? '결과 보기' : '다음'
     }
   }
@@ -776,7 +844,7 @@ function startKanaQuiz(todayPool, n, kind) {
       <div class="card">
         <h3 style="margin-top:0;">결과</h3>
         <div style="font-size:18px;">맞춘 개수: <b>${correct}</b> / ${questions.length}</div>
-        <div style="font-size:34px;font-weight:900;margin-top:8px;">${score}점</div>
+        <div style="font-size:38px;font-weight:900;margin-top:10px;">${score}점</div>
         <button class="btn primary" id="againBtn" style="margin-top:12px;">다시 풀기</button>
       </div>
     `
@@ -786,14 +854,11 @@ function startKanaQuiz(todayPool, n, kind) {
   renderQ()
 }
 
-/** ========= 동사 퀴즈: 틀리면 외움 풀림 ========= */
+/** ========= 동사 퀴즈 ========= */
 function pushWrongVerb(verb) {
   const s = ensureState(load())
   if (!s.wrong.verb.includes(verb)) s.wrong.verb.push(verb)
-  // ✅ 외움완료였던 동사는 틀리면 외움 풀기
-  if (s.verbMem && s.verbMem.key === s.today.key) {
-    delete s.verbMem.mem[verb]
-  }
+  if (s.verbMem && s.verbMem.key === s.today.key) delete s.verbMem.mem[verb]
   save(s)
 }
 
@@ -805,16 +870,14 @@ function renderVerbQuiz() {
     `
       <div class="card">
         <div class="muted small">문제 수 선택</div>
-        <div class="grid2" style="margin-top:8px;">
+        <div class="grid2" style="margin-top:10px;">
           <button class="btn" data-n="10">10문제</button>
           <button class="btn" data-n="20">20문제</button>
           <button class="btn" data-n="50">50문제</button>
         </div>
-        <div class="muted small" style="margin-top:10px;">
-          ※ 정답은 <b>발음을 한글로</b> 입력. 장음은 <b>-</b>로 표기(채점은 - 있어도/없어도 OK)
-        </div>
-        <div class="muted small" style="margin-top:6px;">
-          ※ 외움완료 상태여도 퀴즈에서 틀리면 해당 동사는 <b>외움이 풀립니다</b>.
+        <div class="muted small" style="margin-top:10px;line-height:1.7;">
+          ※ 정답은 <b>발음을 한글로</b> 입력. 장음은 <b>-</b>로 표기(채점은 - 있어도/없어도 OK)<br/>
+          ※ 외움완료여도 틀리면 해당 동사는 <b>외움이 풀립니다</b>.
         </div>
       </div>
 
@@ -846,12 +909,12 @@ function startVerbQuiz(todayPool, n) {
       <div class="card">
         <div class="muted small">문제 ${idx + 1} / ${questions.length}</div>
 
-        <div style="margin-top:8px;">
+        <div style="margin-top:10px;">
           <div class="muted small">동사</div>
           <div style="font-size:18px;font-weight:900;">${escapeHtml(v.verb)} <span class="muted" style="font-weight:700;">(${escapeHtml(v.meaning)})</span></div>
         </div>
 
-        <div style="margin-top:10px;">
+        <div style="margin-top:12px;">
           <div class="muted small">한국어 문장</div>
           <div style="font-size:18px;"><b>${escapeHtml(v.example.kr)}</b></div>
         </div>
@@ -865,9 +928,9 @@ function startVerbQuiz(todayPool, n) {
           <button class="btn" id="hintBtn">정답 보기</button>
         </div>
 
-        <div id="feedback" class="muted" style="margin-top:10px;"></div>
+        <div id="feedback" class="muted" style="margin-top:12px;"></div>
 
-        <div id="answerBox" class="card" style="display:none;margin-top:10px;">
+        <div id="answerBox" class="card" style="display:none;margin-top:12px;">
           <div class="muted small">정답(단어 누르면 뜻)</div>
           <div class="jpLine" style="margin-top:8px;">${answerTokens}</div>
           <div style="margin-top:10px;font-weight:900;">발음(한글): ${escapeHtml(v.example.answerKR)}</div>
@@ -878,7 +941,6 @@ function startVerbQuiz(todayPool, n) {
     `
 
     bindWordToast()
-
     const ans = document.getElementById('ans')
     ans.focus()
 
@@ -888,7 +950,6 @@ function startVerbQuiz(todayPool, n) {
 
     document.getElementById('checkBtn').onclick = () => {
       const ok = equalKRLenient(ans.value, v.example.answerKR)
-
       if (ok) correct += 1
       else pushWrongVerb(v.verb)
 
@@ -911,7 +972,7 @@ function startVerbQuiz(todayPool, n) {
       <div class="card">
         <h3 style="margin-top:0;">결과</h3>
         <div style="font-size:18px;">맞춘 개수: <b>${correct}</b> / ${questions.length}</div>
-        <div style="font-size:34px;font-weight:900;margin-top:8px;">${score}점</div>
+        <div style="font-size:38px;font-weight:900;margin-top:10px;">${score}점</div>
         <button class="btn primary" id="againBtn" style="margin-top:12px;">다시 풀기</button>
       </div>
     `
@@ -933,21 +994,21 @@ function renderWrong() {
     `
       <div class="card">
         <div class="muted small">히라가나</div>
-        <div style="margin-top:6px;line-height:2;">
+        <div style="margin-top:10px;line-height:2;">
           ${hira.length ? hira.map(x => `<span class="chip">${escapeHtml(x)}</span>`).join('') : `<span class="muted">없음</span>`}
         </div>
       </div>
 
       <div class="card" style="margin-top:10px;">
         <div class="muted small">카타카나</div>
-        <div style="margin-top:6px;line-height:2;">
+        <div style="margin-top:10px;line-height:2;">
           ${kata.length ? kata.map(x => `<span class="chip">${escapeHtml(x)}</span>`).join('') : `<span class="muted">없음</span>`}
         </div>
       </div>
 
       <div class="card" style="margin-top:10px;">
         <div class="muted small">동사</div>
-        <div style="margin-top:6px;line-height:2;">
+        <div style="margin-top:10px;line-height:2;">
           ${verb.length ? verb.map(x => `<span class="chip">${escapeHtml(x)}</span>`).join('') : `<span class="muted">없음</span>`}
         </div>
       </div>
@@ -968,13 +1029,7 @@ function renderWrong() {
 
 /** ========= 토스트 ========= */
 function toastHtml() {
-  return `
-    <div id="toast" style="position:fixed;left:50%;bottom:22px;transform:translateX(-50%);
-      background:#111;color:#fff;padding:10px 12px;border-radius:12px;font-size:14px;
-      display:none;max-width:80%;text-align:center;">
-      뜻
-    </div>
-  `
+  return `<div id="toast">뜻</div>`
 }
 
 function bindWordToast() {
@@ -1000,8 +1055,14 @@ function render() {
   if (!state.nickname) return renderNickname()
 
   const route = window.location.hash.replace('#', '') || 'home'
-  if (route === 'home') return renderHome()
 
+  // 새 탭 라우트
+  if (route === 'home') return renderHome()
+  if (route === 'study') return renderStudyHub()
+  if (route === 'quiz') return renderQuizHub()
+  if (route === 'menu') return renderMenu()
+
+  // 기존 상세 라우트(하위 화면)
   if (route === 'study-hira') return renderKanaStudy('hira')
   if (route === 'study-kata') return renderKanaStudy('kata')
   if (route === 'study-verb') return renderVerbStudy()
