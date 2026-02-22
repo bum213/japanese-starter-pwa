@@ -581,6 +581,25 @@ function setKanaMem(kind, ch, value) {
   save(s)
 }
 
+function setKanaMemAll(kind, items) {
+  const s = ensureState(load())
+  if (kind === 'hira') {
+    items.forEach(x => {
+      s.kana.mem.hira[x.ch] = true
+      s.kana.totalMem.hira[x.ch] = true
+      // 혹시 pendingWrong로 관리중이면 같이 해결 처리
+      if (s.kana.pendingWrong?.hira) delete s.kana.pendingWrong.hira[x.ch]
+    })
+  } else {
+    items.forEach(x => {
+      s.kana.mem.kata[x.ch] = true
+      s.kana.totalMem.kata[x.ch] = true
+      if (s.kana.pendingWrong?.kata) delete s.kana.pendingWrong.kata[x.ch]
+    })
+  }
+  save(s)
+}
+
 function renderKanaStudy(kind) {
   const isHira = kind === 'hira'
   const title = isHira ? '히라가나 오늘의 10개' : '카타카나 오늘의 10개'
@@ -614,6 +633,10 @@ function renderKanaStudy(kind) {
         <div class="muted small" style="margin-top:10px;">
           ※ 퀴즈에서 틀리면(현재 챕터 글자면) 자동으로 외움이 풀립니다.
         </div>
+
+        <button class="btn" id="memAllBtn" style="margin-top:10px;">
+          모두 외움(10개)
+        </button>
       </div>
 
       <div class="list">${cards}</div>
@@ -636,6 +659,16 @@ function renderKanaStudy(kind) {
       goto(isHira ? 'study-hira' : 'study-kata')
     }
   })
+
+  const memAllBtn = document.getElementById('memAllBtn')
+  if (memAllBtn) {
+    memAllBtn.onclick = () => {
+      setKanaMemAll(kind, items)
+      render()
+      goto(isHira ? 'study-hira' : 'study-kata')
+    }
+  }
+
 
   document.getElementById('nextKanaBtn').onclick = () => {
     const ok = advanceKanaChapter(kind)
