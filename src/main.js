@@ -581,6 +581,30 @@ function setKanaMem(kind, ch, value) {
   save(s)
 }
 
+
+// ✅ 모두외움 토글 (현재 10개 items 기준)
+function toggleKanaMemAll(kind, items) {
+  const s = ensureState(load())
+  const mem = (kind === 'hira') ? s.kana.mem.hira : s.kana.mem.kata
+  const totalMem = (kind === 'hira') ? s.kana.totalMem.hira : s.kana.totalMem.kata
+
+  const allDone = items.every(x => !!mem[x.ch])
+
+  if (allDone) {
+    // ✅ 이미 전부 외움이면 -> 원복(현재 챕터만 외움 해제)
+    for (const x of items) delete mem[x.ch]
+    // totalMem은 유지(“누적 외움 기록”은 건드리지 않음)
+  } else {
+    // ✅ 아직 덜 외웠으면 -> 전부 외움 처리
+    for (const x of items) {
+      mem[x.ch] = true
+      totalMem[x.ch] = true
+    }
+  }
+
+  save(s)
+}
+
 function setKanaMemAll(kind, items) {
   const s = ensureState(load())
   if (kind === 'hira') {
@@ -634,9 +658,12 @@ function renderKanaStudy(kind) {
           ※ 퀴즈에서 틀리면(현재 챕터 글자면) 자동으로 외움이 풀립니다.
         </div>
 
-        <button class="btn" id="memAllBtn" style="margin-top:10px;">
-          모두 외움(10개)
-        </button>
+
+      </div>
+
+      <!-- ✅ 모두외움(우측 끝) -->
+      <div style="display:flex;justify-content:flex-end;margin-top:10px;">
+        <button class="btn primary" id="memAllBtn">모두외움</button>
       </div>
 
       <div class="list">${cards}</div>
@@ -660,15 +687,6 @@ function renderKanaStudy(kind) {
     }
   })
 
-  const memAllBtn = document.getElementById('memAllBtn')
-  if (memAllBtn) {
-    memAllBtn.onclick = () => {
-      setKanaMemAll(kind, items)
-      render()
-      goto(isHira ? 'study-hira' : 'study-kata')
-    }
-  }
-
 
   document.getElementById('nextKanaBtn').onclick = () => {
     const ok = advanceKanaChapter(kind)
@@ -676,6 +694,25 @@ function renderKanaStudy(kind) {
     render()
     goto(isHira ? 'study-hira' : 'study-kata')
   }
+
+  // ✅ 모두외움 버튼: 토글 + 상태에 따라 텍스트/스타일 변경
+  const memAllBtn = document.getElementById('memAllBtn')
+  if (memAllBtn) {
+    const allDoneNow = items.every(x => !!mem[x.ch])
+
+    // 텍스트 토글
+    memAllBtn.textContent = allDoneNow ? '모두외움 취소' : '모두외움'
+
+    // 스타일 토글 (외움 상태면 취소 버튼 느낌)
+    memAllBtn.className = allDoneNow ? 'btn danger' : 'btn primary'
+
+    memAllBtn.onclick = () => {
+      toggleKanaMemAll(kind, items)
+      render()
+      goto(isHira ? 'study-hira' : 'study-kata')
+    }
+  }
+
 }
 
 /** ========= 학습(동사) ========= */

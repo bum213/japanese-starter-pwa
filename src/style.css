@@ -116,10 +116,21 @@ h3{ font-size:18px; font-weight:900; }
 }
 
 .btn.primary{
-  background:linear-gradient(180deg, rgba(74,163,255,1), rgba(43,125,217,1));
-  border-color:rgba(74,163,255,.6);
-  color:#06101a;
+  background:#ffffff;
+  color:#0b0f14;
+  border:1px solid rgba(255,255,255,.14);
+  box-shadow:0 8px 24px rgba(0,0,0,.35);
 }
+.btn.primary:active{ transform:translateY(1px); }
+
+.btn.danger{
+  background:rgba(255,80,80,.14);
+  color:#ffb4b4;
+  border:1px solid rgba(255,80,80,.28);
+}
+.btn.danger:active{ transform:translateY(1px); }
+
+
 
 .btn.primary:hover{
   filter:brightness(1.03);
